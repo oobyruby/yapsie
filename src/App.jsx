@@ -45,53 +45,54 @@ function App() {
 
   return (
     <BrowserRouter>
+      <div className="app-shell">
+        {/* offline banner shown when user loses internet */}
+        {isOffline && (
+          <div className="offline-banner">
+            you're offline — your feed may not be up to date
+          </div>
+        )}
 
-      {/* offline banner shown when user loses internet */}
-      {isOffline && (
-        <div className="offline-banner">
-          you're offline — your feed may not be up to date
-        </div>
-      )}
+        {/* application routes */}
+        <Routes>
+          {/* auth + entry pages */}
+          <Route path="/" element={<Welcome />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-      {/* application routes */}
-      <Routes>
+          {/* main feed */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/welcome-new" element={<NewUserWelcome />} />
 
-        {/* auth + entry pages */}
-        <Route path="/" element={<Welcome />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+          {/* profile pages */}
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:uid" element={<UserProfile />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
 
-        {/* main feed */}
-        <Route path="/home" element={<Home />} />
-        <Route path="/welcome-new" element={<NewUserWelcome />} />
+          {/* followers / following */}
+          <Route path="/profile/followers" element={<Followers />} />
+          <Route path="/profile/following" element={<Following />} />
+          <Route path="/profile/:uid/followers" element={<Followers />} />
+          <Route path="/profile/:uid/following" element={<Following />} />
 
-        {/* profile pages */}
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile/:uid" element={<UserProfile />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
+          {/* notifications */}
+          <Route path="/notifications" element={<Notifications />} />
 
-        {/* followers / following */}
-        <Route path="/profile/followers" element={<Followers />} />
-        <Route path="/profile/following" element={<Following />} />
-        <Route path="/profile/:uid/followers" element={<Followers />} />
-        <Route path="/profile/:uid/following" element={<Following />} />
+          {/* replies page */}
+          <Route path="/post/:postId" element={<Replies />} />
 
-        {/* notifications */}
-        <Route path="/notifications" element={<Notifications />} />
+          {/* rooms */}
+          <Route path="/rooms/paranormal" element={<ParanormalRoom />} />
+          <Route
+            path="/rooms/paranormal/:channelId"
+            element={<ParanormalChannel />}
+          />
 
-        {/* replies page */}
-        <Route path="/post/:postId" element={<Replies />} />
-
-        {/* rooms */}
-        <Route path="/rooms/paranormal" element={<ParanormalRoom />} />
-        <Route path="/rooms/paranormal/:channelId" element={<ParanormalChannel />} />
-
-        {/* placeholder pages */}
-        <Route path="/messages" element={<ComingSoon />} />
-        <Route path="/settings" element={<ComingSoon />} />
-
-      </Routes>
-
+          {/* placeholder pages */}
+          <Route path="/messages" element={<ComingSoon />} />
+          <Route path="/settings" element={<ComingSoon />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }
