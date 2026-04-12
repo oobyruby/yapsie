@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FiHome, FiUsers, FiMessageCircle, FiSettings, FiBell } from "react-icons/fi";
 
-// custom hooks for loading profile data, posts, and drafts
 import useProfileData from "../hooks/useProfileData";
 import useProfilePosts from "../hooks/useProfilePosts";
 import useProfileDrafts from "../hooks/useProfileDrafts";
 
-// profile page components
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileComposer from "../components/profile/ProfileComposer";
 import ProfileTabs from "../components/profile/ProfileTabs";
@@ -20,7 +18,6 @@ import DeletePostModal from "../components/profile/DeletePostModal";
 export default function Profile() {
   const navigate = useNavigate();
 
-  // load basic profile page data
   const {
     currentUser,
     authReady,
@@ -30,7 +27,6 @@ export default function Profile() {
     followingCount,
   } = useProfileData(navigate);
 
-  // load posts, rooms, likes, reposts, and post actions
   const {
     joinedRooms,
     likeLoadingIds,
@@ -48,36 +44,31 @@ export default function Profile() {
     deletePostById,
   } = useProfilePosts(currentUser);
 
-  // load and manage local drafts
   const { drafts, addDraft, deleteDraft, saveDrafts } = useProfileDrafts(currentUser);
 
-  // which tab is open right now
   const [activeTab, setActiveTab] = useState("posts");
 
-  // composer state for writing a new post
   const [postText, setPostText] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImagePreview, setSelectedImagePreview] = useState("");
   const [saveToast, setSaveToast] = useState("");
   const [isPosting, setIsPosting] = useState(false);
 
-  // optional location state for a post
   const [postLocationLabel, setPostLocationLabel] = useState("");
   const [postLocationCoords, setPostLocationCoords] = useState(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
-  // edit modal state
   const [editingPostId, setEditingPostId] = useState("");
   const [editingText, setEditingText] = useState("");
   const [editLoadingId, setEditLoadingId] = useState("");
 
-  // delete modal state
   const [deleteTargetPostId, setDeleteTargetPostId] = useState("");
   const [deleteLoadingId, setDeleteLoadingId] = useState("");
 
+  const [collapsed, setCollapsed] = useState(false);
+  const scrollRef = useRef(null);
+
   useEffect(() => {
-    // clean up image preview urls when component unmounts
-    // this stops unused preview urls building up in memory
     return () => {
       if (selectedImagePreview) {
         URL.revokeObjectURL(selectedImagePreview);
@@ -85,11 +76,25 @@ export default function Profile() {
     };
   }, [selectedImagePreview]);
 
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      setCollapsed(el.scrollTop > 60);
+    };
+
+    el.addEventListener("scroll", handleScroll);
+    handleScroll();
+
+    return () => {
+      el.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   const showSaveToast = (message) => {
-    // show a little message at the bottom for a short time
     setSaveToast(message);
 
-    // reset the timer if another toast appears quickly after
     window.clearTimeout(window.yapsieSaveToastTimer);
     window.yapsieSaveToastTimer = window.setTimeout(() => {
       setSaveToast("");
@@ -97,13 +102,11 @@ export default function Profile() {
   };
 
   const showOfflineBlockedToast = () => {
-    // used when user tries to do something that needs internet
     showSaveToast("not possible in offline mode — please connect to internet");
   };
 
   const reverseGeocodeLocation = async (latitude, longitude) => {
     try {
-      // turn coords into a readable place name using nominatim
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
       );
@@ -115,7 +118,6 @@ export default function Profile() {
       const data = await response.json();
       const address = data.address || {};
 
-      // try a few possible location fields to get something useful
       const town =
         address.city ||
         address.town ||
@@ -134,10 +136,8 @@ export default function Profile() {
   };
 
   const handleAddLocation = async () => {
-    // stop repeat clicks while location is already being fetched
     if (isGettingLocation) return;
 
-    // check if browser supports geolocation
     if (!navigator.geolocation) {
       alert("geolocation is not supported in this browser");
       return;
@@ -146,7 +146,6 @@ export default function Profile() {
     try {
       setIsGettingLocation(true);
 
-      // wrap browser geolocation in a promise so async/await works nicely
       const position = await new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
@@ -158,7 +157,6 @@ export default function Profile() {
       const latitude = position.coords.latitude;
       const longitude = position.coords.longitude;
 
-      // turn coords into a readable label for the post
       const label = await reverseGeocodeLocation(latitude, longitude);
 
       setPostLocationCoords({ lat: latitude, lng: longitude });
@@ -166,7 +164,6 @@ export default function Profile() {
     } catch (error) {
       console.error("error getting current location:", error);
 
-      // show a different message depending on what went wrong
       if (error.code === 1) {
         alert("location permission was denied");
       } else if (error.code === 2) {
@@ -182,13 +179,11 @@ export default function Profile() {
   };
 
   const clearPostLocation = () => {
-    // remove location from the current post
     setPostLocationLabel("");
     setPostLocationCoords(null);
   };
 
   const clearSelectedImage = () => {
-    // remove preview url before clearing image state
     if (selectedImagePreview) {
       URL.revokeObjectURL(selectedImagePreview);
     }
@@ -201,24 +196,20 @@ export default function Profile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // only allow image files
     if (!file.type.startsWith("image/")) {
       alert("please choose an image file");
       return;
     }
 
-    // keep image size under 5mb
     if (file.size > 5 * 1024 * 1024) {
       alert("image must be 5mb or less");
       return;
     }
 
-    // clear old preview before making a new one
     if (selectedImagePreview) {
       URL.revokeObjectURL(selectedImagePreview);
     }
 
-    // create preview so user sees image straight away
     const previewUrl = URL.createObjectURL(file);
     setSelectedImage(file);
     setSelectedImagePreview(previewUrl);
@@ -227,25 +218,21 @@ export default function Profile() {
   const handleSaveDraft = () => {
     const trimmedText = postText.trim();
 
-    // stop empty drafts being saved
     if (!trimmedText) {
       alert("write something before saving a draft");
       return;
     }
 
-    // save text + location into drafts
     addDraft({
       text: trimmedText,
       locationLabel: postLocationLabel,
       locationCoords: postLocationCoords,
     });
 
-    // images are not saved into drafts, so tell the user that if needed
     const draftToastMessage = selectedImage
       ? "draft saved — image not included"
       : "draft saved";
 
-    // clear composer after saving draft
     setPostText("");
     clearSelectedImage();
     clearPostLocation();
@@ -253,7 +240,6 @@ export default function Profile() {
   };
 
   const handleUseDraft = (draft) => {
-    // put a saved draft back into the composer
     setPostText(draft.text || "");
     setPostLocationLabel(draft.locationLabel || "");
     setPostLocationCoords(draft.locationCoords || null);
@@ -262,10 +248,8 @@ export default function Profile() {
   };
 
   const handlePostDraft = async (draft) => {
-    // stop if user/profile missing or already posting
     if (!currentUser || !profile || isPosting) return;
 
-    // posting drafts still needs internet
     if (!navigator.onLine) {
       showOfflineBlockedToast();
       return;
@@ -274,10 +258,8 @@ export default function Profile() {
     try {
       setIsPosting(true);
 
-      // turn the saved draft into a real post
       await postDraft({ draft, profile });
 
-      // remove it from drafts after posting
       saveDrafts(drafts.filter((item) => item.id !== draft.id));
 
       setPostText("");
@@ -295,10 +277,8 @@ export default function Profile() {
   const handlePost = async () => {
     const trimmedText = postText.trim();
 
-    // stop empty posts, missing user/profile, or double posting
     if (!currentUser || (!trimmedText && !selectedImage) || isPosting || !profile) return;
 
-    // if offline, save text as draft instead
     if (!navigator.onLine) {
       addDraft({
         text: trimmedText,
@@ -316,7 +296,6 @@ export default function Profile() {
     try {
       setIsPosting(true);
 
-      // create the real post
       await createPost({
         profile,
         postText,
@@ -325,7 +304,6 @@ export default function Profile() {
         postLocationCoords,
       });
 
-      // clear composer after successful post
       setPostText("");
       clearSelectedImage();
       clearPostLocation();
@@ -339,23 +317,19 @@ export default function Profile() {
   };
 
   const startEditingPost = (post) => {
-    // only let the owner edit their own normal posts
     if (post.authorId !== currentUser?.uid) return;
     if (post.isRepost || post.isFavourite) return;
 
-    // editing is blocked offline
     if (!navigator.onLine) {
       showOfflineBlockedToast();
       return;
     }
 
-    // open edit modal and fill it with current text
     setEditingPostId(post.id);
     setEditingText(post.editText || "");
   };
 
   const closeEditModal = () => {
-    // stop closing while edit save is still happening
     if (editLoadingId) return;
     setEditingPostId("");
     setEditingText("");
@@ -364,7 +338,6 @@ export default function Profile() {
   const handleSaveEdit = async () => {
     if (!currentUser || !editingPostId) return;
 
-    // editing needs internet
     if (!navigator.onLine) {
       showOfflineBlockedToast();
       return;
@@ -384,7 +357,6 @@ export default function Profile() {
   };
 
   const openDeleteModal = (postId) => {
-    // deleting needs internet too
     if (!navigator.onLine) {
       showOfflineBlockedToast();
       return;
@@ -394,7 +366,6 @@ export default function Profile() {
   };
 
   const closeDeleteModal = () => {
-    // stop closing while delete is still running
     if (deleteLoadingId) return;
     setDeleteTargetPostId("");
   };
@@ -402,7 +373,6 @@ export default function Profile() {
   const handleDeletePost = async () => {
     if (!currentUser || !deleteTargetPostId) return;
 
-    // deleting is blocked offline
     if (!navigator.onLine) {
       showOfflineBlockedToast();
       return;
@@ -420,13 +390,11 @@ export default function Profile() {
     }
   };
 
-  // counts used in the profile header
   const postCount = posts.length;
   const mediaCount = mediaPosts.length;
   const favouritesCount = sortedFavouritePosts.length;
 
   const visiblePosts = useMemo(() => {
-    // work out which list should show depending on active tab
     if (activeTab === "media") return mediaPosts;
     if (activeTab === "favourites") return sortedFavouritePosts;
     if (activeTab === "rooms") return [];
@@ -434,15 +402,10 @@ export default function Profile() {
     return posts;
   }, [activeTab, mediaPosts, sortedFavouritePosts, posts]);
 
-  // loading screen while auth is still being checked
   if (!authReady) {
     return (
       <div className="profile-screen">
         <div className="profile-shell">
-          <div className="profile-fixed">
-            <div className="profile-top-label">User Profile</div>
-          </div>
-
           <div className="profile-feed-scroll">
             <div className="empty-feed">
               <p>loading...</p>
@@ -456,9 +419,9 @@ export default function Profile() {
   return (
     <div className="profile-screen">
       <div className="profile-shell">
-        <div className="profile-fixed">
-          {/* top profile section with counts and edit button */}
+        <div ref={scrollRef} className="profile-feed-scroll">
           <ProfileHeader
+            collapsed={collapsed}
             profile={profile}
             followersCount={followersCount}
             followingCount={followingCount}
@@ -466,7 +429,6 @@ export default function Profile() {
             mediaCount={mediaCount}
             favouritesCount={favouritesCount}
             onEditProfile={() => {
-              // block edit profile page if offline
               if (!navigator.onLine) {
                 showOfflineBlockedToast();
                 return;
@@ -475,10 +437,8 @@ export default function Profile() {
             }}
           />
 
-          {/* profile tabs like posts, media, rooms, drafts, favourites */}
           <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-          {/* composer for writing a new post on your profile */}
           <ProfileComposer
             postText={postText}
             setPostText={setPostText}
@@ -494,9 +454,7 @@ export default function Profile() {
             isPosting={isPosting}
             canPost={!!(postText.trim() || selectedImage)}
           />
-        </div>
 
-        <div className="profile-feed-scroll">
           <div className="profile-posts profile-posts-scroll">
             {activeTab === "rooms" ? (
               <ProfileRoomsTab
@@ -549,10 +507,8 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* little toast message for saves / offline messages */}
         {saveToast ? <div className="yapsie-toast">{saveToast}</div> : null}
 
-        {/* bottom nav */}
         <nav className="bottom-nav">
           <Link to="/home" className="nav-item" aria-label="home">
             <FiHome />
@@ -580,7 +536,6 @@ export default function Profile() {
           <div className="nav-logo">yapsie</div>
         </nav>
 
-        {/* modal for editing a post */}
         <EditPostModal
           editingPostId={editingPostId}
           editingText={editingText}
@@ -590,7 +545,6 @@ export default function Profile() {
           onSave={handleSaveEdit}
         />
 
-        {/* modal for deleting a post */}
         <DeletePostModal
           deleteTargetPostId={deleteTargetPostId}
           deleteLoadingId={deleteLoadingId}

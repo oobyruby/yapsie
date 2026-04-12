@@ -3,6 +3,7 @@ import { FiEdit2 } from "react-icons/fi";
 import { getProfileInitial } from "../../utils/profileFormatters";
 
 export default function ProfileHeader({
+  collapsed,
   profile,
   followersCount,
   followingCount,
@@ -12,16 +13,16 @@ export default function ProfileHeader({
   onEditProfile,
 }) {
   return (
-    <>
-      
+    <div className={`profile-header-wrap ${collapsed ? "collapsed" : ""}`}>
       {/* banner image */}
       <div
         className="profile-banner"
         style={{
-          backgroundImage: profile?.bannerUrl ? `url(${profile.bannerUrl})` : "none",
+          backgroundImage: profile?.bannerUrl
+            ? `url(${profile.bannerUrl})`
+            : "none",
         }}
       >
-        {/* edit profile button */}
         <button
           type="button"
           className="profile-edit-btn"
@@ -33,7 +34,6 @@ export default function ProfileHeader({
       </div>
 
       <div className="profile-header-card">
-        {/* avatar image or fallback initial */}
         {profile?.avatarUrl ? (
           <img
             src={profile.avatarUrl}
@@ -46,16 +46,15 @@ export default function ProfileHeader({
           </div>
         )}
 
-        {/* name + username */}
         <h1 className="profile-name">{profile?.name || "user"}</h1>
-        <p className="profile-username">@{profile?.username || "username"}</p>
+        <p className="profile-username">
+          @{profile?.username || "username"}
+        </p>
 
-        {/* bio */}
         <p className="profile-bio">
           {profile?.bio || "say something about yourself"}
         </p>
 
-        {/* followers + following links */}
         <div className="profile-follow-row">
           <Link to="/profile/followers" className="profile-follow-link">
             <span>{followersCount} followers</span>
@@ -66,13 +65,12 @@ export default function ProfileHeader({
           </Link>
         </div>
 
-        {/* profile stats */}
         <div className="profile-stats">
           <span>{postCount} posts</span>
           <span>{mediaCount} media</span>
           <span>{favouritesCount} favourites</span>
         </div>
       </div>
-    </>
+    </div>
   );
 }

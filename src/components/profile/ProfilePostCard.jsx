@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { FiRepeat, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { FaHeart, FaRegHeart, FaRegComment } from "react-icons/fa";
 import { formatTimeAgo } from "../../utils/profileFormatters";
@@ -41,6 +42,14 @@ export default function ProfilePostCard({
     !post.isRepost &&
     !post.isFavourite;
 
+  // send user to their own profile or another user's profile
+  const profileLink =
+    post.authorId && currentUser?.uid === post.authorId
+      ? "/profile"
+      : post.authorId
+      ? `/profile/${post.authorId}`
+      : "/profile";
+
   return (
     <article className="profile-post-card">
       {/* repost badge */}
@@ -60,18 +69,20 @@ export default function ProfilePostCard({
       ) : null}
 
       <div className="profile-post-top">
-        {/* avatar */}
-        {post.avatarUrl ? (
-          <img
-            src={post.avatarUrl}
-            alt={post.name || post.username || "user"}
-            className="profile-post-avatar"
-          />
-        ) : (
-          <div className="profile-post-avatar profile-post-avatar-fallback">
-            {(post.name || post.username || "y").charAt(0).toUpperCase()}
-          </div>
-        )}
+        {/* avatar now links to correct profile */}
+        <Link to={profileLink} className="feed-user-link" aria-label="open profile">
+          {post.avatarUrl ? (
+            <img
+              src={post.avatarUrl}
+              alt={post.name || post.username || "user"}
+              className="profile-post-avatar"
+            />
+          ) : (
+            <div className="profile-post-avatar profile-post-avatar-fallback">
+              {(post.name || post.username || "y").charAt(0).toUpperCase()}
+            </div>
+          )}
+        </Link>
 
         <div className="profile-post-meta">
           <div
@@ -83,11 +94,24 @@ export default function ProfilePostCard({
               width: "100%",
             }}
           >
-            {/* name + username */}
-            <span className="profile-post-name">{post.name || "user"}</span>
-            <span className="profile-post-username">
-              @{post.username || "unknown"}
-            </span>
+            {/* name + username now link to correct profile */}
+            <Link
+              to={profileLink}
+              className="feed-user-link"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                minWidth: 0,
+                flexWrap: "wrap",
+              }}
+              aria-label="open profile"
+            >
+              <span className="profile-post-name">{post.name || "user"}</span>
+              <span className="profile-post-username">
+                @{post.username || "unknown"}
+              </span>
+            </Link>
 
             {/* time + location */}
             <span className="profile-post-time">· {metaExtras}</span>
