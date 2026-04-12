@@ -1,29 +1,129 @@
-// src/pages/following.jsx
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
 import useFollowing from "../hooks/useFollowing";
+import useAuthUser from "../hooks/useAuthUser";
 
-export default function FollowingPage({ uid }) {
-  // custom hook to get users this profile is following
-  const { following, follow, unfollow } = useFollowing(uid);
+// following page
+export default function FollowingPage() {
+  const navigate = useNavigate();
+
+  // get logged in user
+  const { currentUser, authReady } = useAuthUser();
+  const uid = currentUser?.uid;
+
+  // get following list
+  const { following, loading, unfollow } = useFollowing(uid);
+
+  // wait for auth to load
+  if (!authReady) {
+    return (
+      <div className="profile-screen">
+        <div className="profile-shell">
+          <div className="follow-list-header">
+            {/* back button */}
+            <button className="follow-back-btn" onClick={() => navigate(-1)}>
+              <FiArrowLeft />
+            </button>
+
+            {/* title */}
+            <div className="follow-list-title-wrap">
+              <h2 className="follow-list-title">Following</h2>
+              <p className="follow-list-subtitle">Loading...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      {/* page title */}
-      <h2>Following</h2>
+    <div className="profile-screen">
+      <div className="profile-shell">
+        <div className="follow-list-header">
+          {/* back button */}
+          <button className="follow-back-btn" onClick={() => navigate(-1)}>
+            <FiArrowLeft />
+          </button>
 
-      {/* loop through all followed users */}
-      {following.map((f) => (
-        <div key={f.id}>
-          {/* display username */}
-          <span>{f.username}</span>
-
-          {/* follow button (re-follow if previously unfollowed) */}
-          <button onClick={() => follow(f.id)}>Follow</button>
-
-          {/* unfollow button */}
-          <button onClick={() => unfollow(f.id)}>Unfollow</button>
+          {/* title + count */}
+          <div className="follow-list-title-wrap">
+            <h2 className="follow-list-title">Following</h2>
+            <p className="follow-list-subtitle">
+              {loading
+                ? "Loading..."
+                : `${following.length} account${
+                    following.length === 1 ? "" : "s"
+                  }`}
+            </p>
+          </div>
         </div>
-      ))}
+
+        <div className="profile-feed-scroll">
+          <div className="follow-list-card">
+            {/* empty state */}
+            {!loading && following.length === 0 ? (
+              <p className="empty-feed">You are not following anyone yet.</p>
+            ) : (
+              // map following users
+              following.map((user) => (
+                <div key={user.id} className="follow-user-row">
+                  {/* profile link */}
+                  <Link
+                    to={`/profile/${user.id}`}
+                    className="follow-user-row"
+                    style={{
+                      flex: 1,
+                      padding: 0,
+                      background: "transparent",
+                      border: "none",
+                    }}
+                  >
+                    {/* avatar */}
+                    {user.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.displayName}
+                        className="follow-user-avatar"
+                      />
+                    ) : (
+                      <div className="follow-user-avatar follow-user-avatar-fallback">
+                        {(user.displayName || "u")
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+                    )}
+
+                    {/* user info */}
+                    <div className="follow-user-meta">
+                      <div className="follow-user-name">
+                        {user.displayName}
+                      </div>
+
+                      <div className="follow-user-username">
+                        {user.username ? `@${user.username}` : "@user"}
+                      </div>
+
+                      {/* bio (optional) */}
+                      {user.bio ? (
+                        <p className="follow-user-bio">{user.bio}</p>
+                      ) : null}
+                    </div>
+                  </Link>
+
+                  {/* unfollow button */}
+                  <button
+                    className="follow-inline-btn following"
+                    onClick={() => unfollow(user.id)}
+                  >
+                    Unfollow
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

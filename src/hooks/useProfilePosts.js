@@ -444,6 +444,11 @@ export default function useProfilePosts(currentUser) {
         // unlike post
         await deleteDoc(likeRef);
         await updateDoc(postRef, { likeCount: increment(-1) });
+
+        // remove immediately from favourites tab feel
+        setFavouritePosts((prev) =>
+          prev.filter((post) => post.originalPostId !== realPostId)
+        );
       } else {
         // like post
         await setDoc(likeRef, {
@@ -453,34 +458,8 @@ export default function useProfilePosts(currentUser) {
         await updateDoc(postRef, { likeCount: increment(1) });
       }
 
-      const updateCounts = (post) => {
-        const id =
-          post.originalPostId ||
-          (String(post.id).startsWith("repost-")
-            ? post.id.replace("repost-", "")
-            : String(post.id).startsWith("favourite-")
-            ? post.id.replace("favourite-", "")
-            : post.id);
-
-        if (id !== realPostId) return post;
-
-        return {
-          ...post,
-          likeCount: likedByMe
-            ? Math.max((post.likeCount || 0) - 1, 0)
-            : (post.likeCount || 0) + 1,
-        };
-      };
-
-      // update local ui right away
-      setOwnPosts((prev) => prev.map(updateCounts));
-      setRepostedPosts((prev) => prev.map(updateCounts));
-      setFavouritePosts((prev) =>
-        likedByMe
-          ? prev.filter((post) => post.originalPostId !== realPostId)
-          : prev.map(updateCounts)
-      );
-
+      // only update liked state locally
+      // count itself comes back from firestore snapshot
       setLikedPostIds((prev) => {
         const next = new Set(prev);
         if (likedByMe) next.delete(realPostId);
@@ -571,30 +550,8 @@ export default function useProfilePosts(currentUser) {
         }
       }
 
-      const updateCounts = (post) => {
-        const id =
-          post.originalPostId ||
-          (String(post.id).startsWith("repost-")
-            ? post.id.replace("repost-", "")
-            : String(post.id).startsWith("favourite-")
-            ? post.id.replace("favourite-", "")
-            : post.id);
-
-        if (id !== realPostId) return post;
-
-        return {
-          ...post,
-          repostCount: repostedByMe
-            ? Math.max((post.repostCount || 0) - 1, 0)
-            : (post.repostCount || 0) + 1,
-        };
-      };
-
-      // update local ui
-      setOwnPosts((prev) => prev.map(updateCounts));
-      setRepostedPosts((prev) => prev.map(updateCounts));
-      setFavouritePosts((prev) => prev.map(updateCounts));
-
+      // only update reposted state locally
+      // count itself comes back from firestore snapshot
       setRepostedPostIds((prev) => {
         const next = new Set(prev);
         if (repostedByMe) next.delete(realPostId);

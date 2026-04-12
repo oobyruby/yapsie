@@ -463,6 +463,18 @@ export default function UserProfile() {
         await deleteDoc(likeRef);
         await updateDoc(postRef, { likeCount: increment(-1) });
 
+        // remove immediately from favourites list
+        setFavouritePosts((prev) =>
+          prev.filter((item) => {
+            const itemId =
+              item.originalPostId ||
+              (String(item.id).startsWith("favourite-")
+                ? item.id.replace("favourite-", "")
+                : item.id);
+            return itemId !== realPostId;
+          })
+        );
+
         setLikedPostIds((prev) => {
           const next = new Set(prev);
           next.delete(realPostId);
@@ -482,40 +494,6 @@ export default function UserProfile() {
           return next;
         });
       }
-
-      const updateCounts = (item) => {
-        const itemId =
-          item.originalPostId ||
-          (String(item.id).startsWith("repost-")
-            ? item.id.replace("repost-", "")
-            : String(item.id).startsWith("favourite-")
-            ? item.id.replace("favourite-", "")
-            : item.id);
-
-        if (itemId !== realPostId) return item;
-
-        return {
-          ...item,
-          likeCount: post.likedByMe
-            ? Math.max((item.likeCount || 0) - 1, 0)
-            : (item.likeCount || 0) + 1,
-        };
-      };
-
-      setOwnPosts((prev) => prev.map(updateCounts));
-      setRepostedPosts((prev) => prev.map(updateCounts));
-      setFavouritePosts((prev) =>
-        post.likedByMe
-          ? prev.filter((item) => {
-              const itemId =
-                item.originalPostId ||
-                (String(item.id).startsWith("favourite-")
-                  ? item.id.replace("favourite-", "")
-                  : item.id);
-              return itemId !== realPostId;
-            })
-          : prev.map(updateCounts)
-      );
     } catch (error) {
       console.error("error toggling like:", error);
       alert("could not update like right now");
@@ -550,6 +528,18 @@ export default function UserProfile() {
         await deleteDoc(repostRef);
         await updateDoc(postRef, { repostCount: increment(-1) });
 
+        // remove immediately from repost list
+        setRepostedPosts((prev) =>
+          prev.filter((item) => {
+            const itemId =
+              item.originalPostId ||
+              (String(item.id).startsWith("repost-")
+                ? item.id.replace("repost-", "")
+                : item.id);
+            return itemId !== realPostId;
+          })
+        );
+
         setRepostedPostIds((prev) => {
           const next = new Set(prev);
           next.delete(realPostId);
@@ -569,29 +559,6 @@ export default function UserProfile() {
           return next;
         });
       }
-
-      const updateCounts = (item) => {
-        const itemId =
-          item.originalPostId ||
-          (String(item.id).startsWith("repost-")
-            ? item.id.replace("repost-", "")
-            : String(item.id).startsWith("favourite-")
-            ? item.id.replace("favourite-", "")
-            : item.id);
-
-        if (itemId !== realPostId) return item;
-
-        return {
-          ...item,
-          repostCount: post.repostedByMe
-            ? Math.max((item.repostCount || 0) - 1, 0)
-            : (item.repostCount || 0) + 1,
-        };
-      };
-
-      setOwnPosts((prev) => prev.map(updateCounts));
-      setRepostedPosts((prev) => prev.map(updateCounts));
-      setFavouritePosts((prev) => prev.map(updateCounts));
     } catch (error) {
       console.error("error toggling repost:", error);
       alert("could not update repost right now");
@@ -641,10 +608,7 @@ export default function UserProfile() {
   return (
     <div className="profile-screen">
       <div className="profile-shell">
-        <div
-          ref={scrollRef}
-          className="profile-feed-scroll"
-        >
+        <div ref={scrollRef} className="profile-feed-scroll">
           <div className={collapsed ? "profile-header-wrap collapsed" : "profile-header-wrap"}>
             <UserProfileHeader
               profile={profile}
