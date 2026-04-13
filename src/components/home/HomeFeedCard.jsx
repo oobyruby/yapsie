@@ -73,7 +73,26 @@ export default function HomeFeedCard({
           </div>
 
           {/* main post text */}
-          <p className="feed-text">{post.text}</p>
+          {/* main post text */}
+          {post.text || post.editText ? (
+          <p className="feed-text">
+            {post.edited && post.editText ? post.editText : post.text}
+          </p>
+        ) : null}
+
+{/* edited label */}
+{post.edited ? (
+  <span
+    style={{
+      fontSize: "11px",
+      color: "#8a8a8a",
+      marginTop: "4px",
+      display: "inline-block",
+    }}
+  >
+    edited
+  </span>
+) : null}
 
           {/* optional post image */}
           {post.imageUrl ? (
