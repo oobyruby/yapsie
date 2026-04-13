@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FiArrowLeft,
   FiHome,
@@ -14,7 +14,6 @@ import { auth, db } from "../firebase";
 
 export default function ComingSoon() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   // logged in user + auth ready state
   const [currentUser, setCurrentUser] = useState(null);
@@ -22,15 +21,6 @@ export default function ComingSoon() {
 
   // unread dot for notifications in bottom nav
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
-
-  // work out if this page is being used for messages or settings
-  const isMessagesPage = location.pathname === "/messages";
-
-  // page title and subtitle change depending on route
-  const pageTitle = isMessagesPage ? "Messages" : "Settings";
-  const pageSubtitle = isMessagesPage
-    ? "private chats are coming soon"
-    : "settings are coming soon";
 
   useEffect(() => {
     // watch auth state so we know if user is logged in
@@ -78,7 +68,7 @@ export default function ComingSoon() {
     return (
       <div className="profile-screen">
         <div className="profile-shell">
-          <div className="profile-top-label">{pageTitle}</div>
+          <div className="profile-top-label">Messages</div>
           <div className="empty-feed">
             <p>loading...</p>
           </div>
@@ -90,42 +80,20 @@ export default function ComingSoon() {
   return (
     <div className="profile-screen">
       <div className="profile-shell">
-        <div className="profile-scroll">
-          <div className="reply-header">
-            {/* back button */}
-            <button
-              type="button"
-              className="follow-back-btn"
-              onClick={() => navigate(-1)}
-              aria-label="go back"
-            >
-              <FiArrowLeft />
-            </button>
-
-            <div className="follow-list-title-wrap">
-              {/* title and subtitle change depending on which page this is */}
-              <h1 className="follow-list-title">{pageTitle}</h1>
-              <p className="follow-list-subtitle">{pageSubtitle}</p>
-            </div>
-          </div>
+        <div className="profile-feed-scroll">
 
           <div className="coming-soon-wrap">
             <div className="coming-soon-card">
-              {/* show different icon depending on page */}
               <div className="coming-soon-icon">
-                {isMessagesPage ? <FiMessageCircle /> : <FiSettings />}
+                <FiMessageCircle />
               </div>
 
               <h2 className="coming-soon-title">coming soon</h2>
 
-              {/* main message also changes depending on page */}
               <p className="coming-soon-text">
-                {isMessagesPage
-                  ? "yapsie messages are not live just yet, but they will be here soon."
-                  : "the settings area is not live just yet, but it will be here soon."}
+                yapsie messages are not live just yet, but they will be here soon.
               </p>
 
-              {/* button back to home */}
               <button
                 type="button"
                 className="coming-soon-btn"
@@ -147,33 +115,21 @@ export default function ComingSoon() {
             <FiUsers />
           </Link>
 
-          {/* active state changes if this is the messages version of the page */}
-          <Link
-            to="/messages"
-            className={`nav-item ${isMessagesPage ? "active" : ""}`}
-            aria-label="messages"
-          >
+          <Link to="/messages" className="nav-item active" aria-label="messages">
             <FiMessageCircle />
           </Link>
 
-          {/* notifications icon with unread dot */}
           <Link to="/notifications" className="nav-item" aria-label="notifications">
             <span className="nav-icon-wrap">
               <FiBell />
-              {hasUnreadNotifications && <span className="nav-notification-dot" />}
+              {hasUnreadNotifications ? <span className="nav-notification-dot" /> : null}
             </span>
           </Link>
 
-          {/* active state changes if this is the settings version of the page */}
-          <Link
-            to="/settings"
-            className={`nav-item ${!isMessagesPage ? "active" : ""}`}
-            aria-label="settings"
-          >
+          <Link to="/settings" className="nav-item" aria-label="settings">
             <FiSettings />
           </Link>
 
-          {/* small app logo */}
           <div className="nav-logo">yapsie</div>
         </nav>
       </div>

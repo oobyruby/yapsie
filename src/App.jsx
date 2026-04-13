@@ -20,6 +20,7 @@ import Replies from "./pages/replies";
 import ParanormalRoom from "./pages/paranormalroom";
 import ParanormalChannel from "./pages/paranormalchannel";
 import ComingSoon from "./pages/comingsoon";
+import Settings from "./pages/settings";
 
 function App() {
   // track online/offline state
@@ -90,7 +91,7 @@ function App() {
 
           {/* placeholder pages */}
           <Route path="/messages" element={<ComingSoon />} />
-          <Route path="/settings" element={<ComingSoon />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </div>
     </BrowserRouter>
