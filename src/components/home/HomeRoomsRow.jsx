@@ -1,6 +1,16 @@
 export default function HomeRoomsRow({ rooms, onOpenRoom }) {
   return (
-    <div className="rooms-row">
+    <div
+      className="rooms-row"
+      style={{
+        display: "flex",
+        justifyContent: "center", // centers the rooms
+        gap: 10,
+        width: "100%",
+        marginTop: 8,
+        marginBottom: 8,
+      }}
+    >
       {/* loop through available rooms */}
       {rooms.map((room) => (
         <button

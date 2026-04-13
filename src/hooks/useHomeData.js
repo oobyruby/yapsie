@@ -24,16 +24,16 @@ export default function useHomeData(navigate) {
 
   // room list for the home row
   // useMemo keeps this from being rebuilt every render for no reason
-  const rooms = useMemo(
-    () => [
-      { id: 1, name: "for you", icon: "👤", path: null },
-      { id: 2, name: "foodies", icon: "🍽️", path: null },
-      { id: 3, name: "bmx", icon: "🚲", path: null },
-      { id: 4, name: "paranormal", icon: "👻", path: "/rooms/paranormal" },
-      { id: 5, name: "movies", icon: "📺", path: null },
-    ],
-    []
-  );
+const rooms = useMemo(
+  () => [
+    { id: 1, name: "paranormal", icon: "👻", path: "/rooms/paranormal" },
+    { id: 2, name: "more rooms soon", icon: "⋆.˚⟡ ࣪ ˖", path: null },
+    { id: 3, name: "coming soon", icon: "❤︎⁠", path: null },
+    { id: 4, name: "coming soon", icon: "❤︎⁠", path: null },
+    { id: 5, name: "coming soon", icon: "❤︎⁠", path: null },
+  ],
+  []
+);
 
   useEffect(() => {
     // watch auth state so we know if user is logged in

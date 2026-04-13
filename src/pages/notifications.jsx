@@ -172,8 +172,7 @@ export default function Notifications() {
   return (
     <div className="profile-screen">
       <div className="profile-shell">
-        <div className="profile-top-label">Notifications</div>
-
+        
         <div className="profile-posts notifications-list">
           {loading ? (
             <div className="empty-feed">
