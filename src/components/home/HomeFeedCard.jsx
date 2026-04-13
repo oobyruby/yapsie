@@ -102,15 +102,6 @@ export default function HomeFeedCard({
               className="feed-post-image"
             />
           ) : null}
-
-          {/* optional post image */}
-          {post.imageUrl ? (
-            <img
-              src={post.imageUrl}
-              alt="post upload"
-              className="feed-post-image"
-            />
-          ) : null}
         </div>
       </div>
 
