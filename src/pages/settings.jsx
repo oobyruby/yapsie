@@ -70,7 +70,7 @@ export default function Settings() {
             <div className="settings-card">
               <h1 className="settings-title">settings</h1>
               <p className="settings-text">
-                more settings can be added here later.
+                more settings coming soon. ݁₊ ⊹ . ݁˖ . ݁
               </p>
 
               <div className="settings-actions">
