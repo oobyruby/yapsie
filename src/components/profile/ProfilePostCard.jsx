@@ -174,21 +174,23 @@ export default function ProfilePostCard({
           </div>
 
           {/* main text */}
-          <p className="profile-post-text">{post.text}</p>
+          <p className="profile-post-text">
+          {post.edited && post.editText ? post.editText : post.text}
+          </p>
 
-          {/* edit note */}
-          {post.edited && post.editText ? (
-            <p
-              style={{
-                marginTop: "6px",
-                fontSize: "12px",
-                color: "#b8b8b8",
-                lineHeight: "1.5",
-              }}
-            >
-              (edit: {post.editText})
-            </p>
-          ) : null}
+          {/* edited label */}
+        {post.edited ? (
+          <span
+            style={{
+             fontSize: "11px",
+             color: "#8a8a8a",
+            marginTop: "4px",
+             display: "inline-block",
+            }}
+           >
+           edited
+           </span>
+           ) : null}
 
           {/* image */}
           {post.imageUrl ? (

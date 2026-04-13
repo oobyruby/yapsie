@@ -91,15 +91,23 @@ export default function UserProfilePostCard({
           </Link>
 
           {/* post text */}
-          {post.text ? <p className="profile-post-text">{post.text}</p> : null}
+          {post.text || post.editText ? (
+         <p className="profile-post-text">
+          {post.edited && post.editText ? post.editText : post.text}
+         </p>
+          ) : null}
 
-          {/* image */}
-          {post.imageUrl ? (
-            <img
-              src={post.imageUrl}
-              alt="post"
-              className="profile-post-image"
-            />
+          {post.edited ? (
+            <span
+    style={{
+      fontSize: "11px",
+      color: "#8a8a8a",
+      marginTop: "4px",
+      display: "inline-block",
+    }}
+  >
+    edited
+           </span>
           ) : null}
         </div>
       </div>
