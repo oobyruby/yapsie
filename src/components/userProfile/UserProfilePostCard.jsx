@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { FiMessageCircle, FiRepeat, FiHeart } from "react-icons/fi";
 import { FaHeart } from "react-icons/fa";
 
-// formats timestamp into short social style time
+// turn a date into short time like now, 5m, 2h, 3d
 function formatPostTime(date) {
   if (!date) return "";
 
@@ -33,20 +33,21 @@ export default function UserProfilePostCard({
 }) {
   if (!post) return null;
 
-  // fallback display values if post missing profile info
+  // use post info first, then fall back to profile info if needed
   const displayName = post.name || fallbackProfile?.name || "user";
   const displayUsername = post.username || fallbackProfile?.username || "user";
   const avatarSrc = post.avatarUrl || fallbackProfile?.avatarUrl || "";
   const initial = (displayName || "u").charAt(0).toUpperCase();
 
-  // reposts show repost time instead of original post time
+  // if it is a repost, show repost time instead
   const displayTime = post.isRepost ? post.repostedAt : post.createdAt;
 
+  // make sure clicking name or avatar goes to the right profile
   const profileLink = post.authorId ? `/profile/${post.authorId}` : "/profile";
 
   return (
     <article className="profile-post-card">
-      {/* repost badge */}
+      {/* show small repost label above the post */}
       {post.isRepost ? (
         <div className="post-badge-row">
           <FiRepeat />
@@ -55,8 +56,12 @@ export default function UserProfilePostCard({
       ) : null}
 
       <div className="profile-post-top">
-        {/* avatar */}
-        <Link to={profileLink} className="feed-user-link" aria-label="open profile">
+        {/* avatar on the left */}
+        <Link
+          to={profileLink}
+          className="feed-user-link"
+          aria-label="open profile"
+        >
           {avatarSrc ? (
             <img
               src={avatarSrc}
@@ -69,7 +74,7 @@ export default function UserProfilePostCard({
         </Link>
 
         <div className="profile-post-meta">
-          {/* name row */}
+          {/* name, @username and time */}
           <Link
             to={profileLink}
             className="feed-user-link"
@@ -92,27 +97,51 @@ export default function UserProfilePostCard({
 
           {/* post text */}
           {post.text || post.editText ? (
-         <p className="profile-post-text">
-          {post.edited && post.editText ? post.editText : post.text}
-         </p>
+            <p className="profile-post-text">
+              {post.edited && post.editText ? post.editText : post.text}
+            </p>
           ) : null}
 
+          {/* single uploaded image */}
+          {post.imageUrl ? (
+            <img
+              src={post.imageUrl}
+              alt="post"
+              className="profile-post-image"
+            />
+          ) : null}
+
+          {/* if a post has more than one image, show them in a grid */}
+          {Array.isArray(post.mediaUrls) && post.mediaUrls.length > 0 ? (
+            <div className="profile-post-image-grid">
+              {post.mediaUrls.map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt="post"
+                  className="profile-post-image"
+                />
+              ))}
+            </div>
+          ) : null}
+
+          {/* small edited label under the text */}
           {post.edited ? (
             <span
-    style={{
-      fontSize: "11px",
-      color: "#8a8a8a",
-      marginTop: "4px",
-      display: "inline-block",
-    }}
-  >
-    edited
-           </span>
+              style={{
+                fontSize: "11px",
+                color: "#8a8a8a",
+                marginTop: "4px",
+                display: "inline-block",
+              }}
+            >
+              edited
+            </span>
           ) : null}
         </div>
       </div>
 
-      {/* actions */}
+      {/* post action buttons */}
       <div className="profile-post-actions">
         {/* replies */}
         <button
@@ -124,7 +153,7 @@ export default function UserProfilePostCard({
           <span>{post.replyCount || 0}</span>
         </button>
 
-        {/* repost */}
+        {/* repost button */}
         <button
           type="button"
           className={`profile-post-action repost ${
@@ -137,7 +166,7 @@ export default function UserProfilePostCard({
           <span>{post.repostCount || 0}</span>
         </button>
 
-        {/* like */}
+        {/* like button */}
         <button
           type="button"
           className={`profile-post-action like ${
